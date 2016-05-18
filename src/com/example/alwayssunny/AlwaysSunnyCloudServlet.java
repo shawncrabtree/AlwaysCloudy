@@ -20,20 +20,7 @@ public class AlwaysSunnyCloudServlet extends HttpServlet {
 	}
 	
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		resp.setContentType("application/json");
-		PrintWriter out = resp.getWriter();
-
-		PersistenceManager pm = PMF.getPMF().getPersistenceManager();
-		try {
-			WeatherStation weatherstation = new WeatherStation((long) 3, "test", 4.0, 5.0, true);
-			pm.makePersistent(weatherstation);
-			
-		} catch (IllegalArgumentException iae) {
-			out.write(iae.getMessage());
-		} finally {
-			pm.close();
-		}
-		out.write("done");
+		
 	}
 	
 	public String formatAsJson(List<WeatherStation> stations) {
