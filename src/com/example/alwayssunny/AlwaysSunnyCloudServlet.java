@@ -19,10 +19,6 @@ public class AlwaysSunnyCloudServlet extends HttpServlet {
 		out.println(jsonString);
 	}
 	
-	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		
-	}
-	
 	public String formatAsJson(List<WeatherStation> stations) {
 		String jsonString = "[";
 		for(WeatherStation s : stations){

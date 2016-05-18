@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -101,7 +102,10 @@ public class SunnyDataServlet extends HttpServlet {
 
         String jsonString = "";
         try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+        	HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+        	conn.setConnectTimeout(60000);  //60 Seconds
+        	conn.setReadTimeout(60000);  //60 Seconds
+        	BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String inputLine;
             while ((inputLine = in.readLine()) != null)
                 jsonString += inputLine;
