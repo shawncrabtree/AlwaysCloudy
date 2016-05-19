@@ -58,9 +58,10 @@ public class WeatherStation {
     public Date UpdatedDate() { return this.UpdatedDate; }
     
 	@SuppressWarnings("unchecked")
-	public static List<WeatherStation> loadSunnyNear(PersistenceManager pm, final double lat, final double lng) {
-		Query query = pm.newQuery(WeatherStation.class, "IsSunny == :true");
-		List<WeatherStation> rv = (List<WeatherStation>) query.execute(true);
+	public static List<WeatherStation> loadSunnyNear(PersistenceManager pm, final double lat, final double lng, boolean sun) {
+		Query query = pm.newQuery(WeatherStation.class, "IsSunny == :sun");
+		query.getFetchPlan().setFetchSize(300);
+		List<WeatherStation> rv = (List<WeatherStation>) query.execute(sun);
 		Collections.sort(rv, new Comparator<WeatherStation>() {
             @Override
             public int compare(WeatherStation w1, WeatherStation w2) {

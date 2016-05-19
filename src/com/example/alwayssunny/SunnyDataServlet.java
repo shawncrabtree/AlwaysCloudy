@@ -130,8 +130,10 @@ public class SunnyDataServlet extends HttpServlet {
             Double stationLat = coord.getDouble("lat");
             Double stationLng = coord.getDouble("lon");
             int cloudLevel = json.getJSONObject("clouds").getInt("all");
-            int weatherId = json.getJSONArray("weather").getJSONObject(0).getInt("id");
-            Boolean isSunny = cloudLevel == 0 && weatherId == 800;
+            JSONObject weather = json.getJSONArray("weather").getJSONObject(0);
+            int weatherId = weather.getInt("id");
+            String icon = weather.getString("icon");
+            Boolean isSunny = cloudLevel == 0 && weatherId == 800 && icon.contains("d");
             WeatherStation station = new WeatherStation(stationId, stationName, stationLat, stationLng, isSunny);
             return station;
         } catch (JSONException e) {

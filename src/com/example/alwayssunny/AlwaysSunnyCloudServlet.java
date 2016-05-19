@@ -14,13 +14,14 @@ public class AlwaysSunnyCloudServlet extends HttpServlet {
 		PrintWriter out = resp.getWriter();
 		String latstr = (String) req.getParameter("lat");
 		String lngstr = (String) req.getParameter("lng");
+		String sunstr = (String) req.getParameter("sun");
 		String jsonString = "Must supply lat and lng get args";
 		if(latstr != null && lngstr != null && latstr.length() > 0 && lngstr.length() > 0){
 			double lat = Double.valueOf(latstr);
 			double lng = Double.valueOf(lngstr);
-			
+			boolean sun = (sunstr != "false");
 			PersistenceManager pm = PMF.getPMF().getPersistenceManager();
-			List<WeatherStation> sunnyStations = WeatherStation.loadSunnyNear(pm, lat, lng);
+			List<WeatherStation> sunnyStations = WeatherStation.loadSunnyNear(pm, lat, lng, sun);
 			jsonString = formatAsJson(sunnyStations);
 		}
 		out.println(jsonString);

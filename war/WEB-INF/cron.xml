@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
   <cron>
-    <url>/tasks/summary</url>
-    <target>v2.beta</target>
-    <description>daily summary job</description>
+    <url>/update</url>
+    <description>update weather stations</description>
     <schedule>every 5 minutes</schedule>
   </cron>
 </cronentries>
