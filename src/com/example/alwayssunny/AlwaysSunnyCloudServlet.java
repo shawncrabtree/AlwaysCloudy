@@ -12,10 +12,17 @@ public class AlwaysSunnyCloudServlet extends HttpServlet {
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		resp.setContentType("application/json");
 		PrintWriter out = resp.getWriter();
-		
-		PersistenceManager pm = PMF.getPMF().getPersistenceManager();
-		List<WeatherStation> sunnyStations = WeatherStation.loadSunny(pm);
-		String jsonString = formatAsJson(sunnyStations);
+		String latstr = (String) req.getParameter("lat");
+		String lngstr = (String) req.getParameter("lng");
+		String jsonString = "Must supply lat and lng get args";
+		if(latstr != null && lngstr != null && latstr.length() > 0 && lngstr.length() > 0){
+			double lat = Double.valueOf(latstr);
+			double lng = Double.valueOf(lngstr);
+			
+			PersistenceManager pm = PMF.getPMF().getPersistenceManager();
+			List<WeatherStation> sunnyStations = WeatherStation.loadSunnyNear(pm, lat, lng);
+			jsonString = formatAsJson(sunnyStations);
+		}
 		out.println(jsonString);
 	}
 	

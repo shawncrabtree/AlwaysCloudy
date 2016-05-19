@@ -1,5 +1,8 @@
 package com.example.alwayssunny;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,12 +58,27 @@ public class WeatherStation {
     public Date UpdatedDate() { return this.UpdatedDate; }
     
 	@SuppressWarnings("unchecked")
-	public static List<WeatherStation> loadSunny(PersistenceManager pm) {
+	public static List<WeatherStation> loadSunnyNear(PersistenceManager pm, final double lat, final double lng) {
 		Query query = pm.newQuery(WeatherStation.class, "IsSunny == :true");
 		List<WeatherStation> rv = (List<WeatherStation>) query.execute(true);
-		rv.size(); // forces all records to load into memory
+		Collections.sort(rv, new Comparator<WeatherStation>() {
+            @Override
+            public int compare(WeatherStation w1, WeatherStation w2) {
+                double w1dist = distance(w1.Latitude, w1.Longitude, lat, lng);
+                double w2dist = distance(w2.Latitude, w2.Longitude, lat, lng);
+                return w1dist > w2dist ? 1 : -1;
+            }
+        });
+		
+		ArrayList<WeatherStation> retlist = new ArrayList<WeatherStation>();
+		if(rv.size() >= 3){
+			retlist.add(rv.get(0));
+			retlist.add(rv.get(1));
+			retlist.add(rv.get(2));
+		}
+		
 		query.closeAll();
-		return rv;
+		return retlist;
 	}
 	
 	public String formatAsJson() {
@@ -70,10 +88,22 @@ public class WeatherStation {
 		obj.put("lat", Double.toString(Latitude));
 		obj.put("lng", Double.toString(Longitude));
 		obj.put("sunny", Boolean.toString(IsSunny));
+		obj.put("updateddate", UpdatedDate.toString());
 		GsonBuilder builder = new GsonBuilder();
 		Gson gson = builder.create();
 		return gson.toJson(obj);
 	}
+	
+	private static double distance(double lat1, double lng1, double lat2, double lng2) {
+        double earthRadius = 6371000; //meters
+        double dLat = Math.toRadians(lat2-lat1);
+        double dLng = Math.toRadians(lng2-lng1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLng/2) * Math.sin(dLng/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return earthRadius * c;
+    }
     
     
 

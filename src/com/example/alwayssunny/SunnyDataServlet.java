@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.labs.repackaged.org.json.JSONArray;
 import com.google.appengine.labs.repackaged.org.json.JSONException;
 import com.google.appengine.labs.repackaged.org.json.JSONObject;
@@ -38,38 +39,33 @@ public class SunnyDataServlet extends HttpServlet {
 	}
 	
 	public ArrayList<WeatherStation> searchWeatherStations(){
-		ArrayList<ArrayList<String>> boxes = new ArrayList<ArrayList<String>>();
-		ArrayList<String> latcoords = new ArrayList<String>() {{
-		    add("-90");
-		    add("-60");
-		    add("-30");
-		    add("0");
-		    add("30");
-		    add("60");
-		}};
-		ArrayList<String> lngcoords = new ArrayList<String>() {{
-		    add("-180");
-		    add("-120");
-		    add("-60");
-		    add("0");
-		    add("60");
-		    add("120");
-		    add("180");
-		}};
+		GeoPt center = new GeoPt(0,0);
+		GeoPt left = new GeoPt(0,-180);
+		GeoPt right = new GeoPt(0,180);
+		GeoPt bot = new GeoPt(-90,0);
+		GeoPt top = new GeoPt(90,0);
+		GeoPt topleft = new GeoPt(90,-180);
+		GeoPt botright = new GeoPt(-90,180);
+		//top left to bottom right
+		Pair<GeoPt, GeoPt> box1 = new Pair<GeoPt, GeoPt>(topleft, center);
+		Pair<GeoPt, GeoPt> box2 = new Pair<GeoPt, GeoPt>(top, right);
+		Pair<GeoPt, GeoPt> box3 = new Pair<GeoPt, GeoPt>(left, bot);
+		Pair<GeoPt, GeoPt> box4 = new Pair<GeoPt, GeoPt>(center, botright);
+		
 		ArrayList<WeatherStation> stations = new ArrayList<WeatherStation>();
-		for(int i = 0; i < latcoords.size()-1; i++){
-			for(int j = 0; j < latcoords.size()-1; j++){
-				ArrayList<WeatherStation> s = searchWeatherStations(latcoords.get(i), latcoords.get(i+1), lngcoords.get(j), lngcoords.get(j+1));
-				stations.addAll(s);
-			}
-		}
+		stations.addAll(searchWeatherStations(box1));
+		stations.addAll(searchWeatherStations(box2));
+		stations.addAll(searchWeatherStations(box3));
+		stations.addAll(searchWeatherStations(box4));
 		return stations;
 	}
 	
-	public ArrayList<WeatherStation> searchWeatherStations(String lat1, String lng1, String lat2, String lng2){
+	public ArrayList<WeatherStation> searchWeatherStations(Pair<GeoPt, GeoPt> box){
 		JSONObject reader;
         JSONArray jArray = new JSONArray();
-        String jsonString = getWeatherStringFromURL(lat1, lng1, lat2, lng2);
+        GeoPt tl = box.getElement0();
+        GeoPt br = box.getElement1();
+        String jsonString = getWeatherStringFromURL(tl.getLongitude(), tl.getLatitude(), br.getLongitude(), br.getLatitude());
         try {
             reader = new JSONObject(jsonString);
             jArray = reader.getJSONArray("list");
@@ -92,10 +88,18 @@ public class SunnyDataServlet extends HttpServlet {
         return stations;
 	}
 	
-	public String getWeatherStringFromURL(String lat1, String lng1, String lat2, String lng2){
+	public String getWeatherStringFromURL(float tllon, float tllat, float brlon, float brlat){
         URL url;
         try {
-            url = new URL("http://api.openweathermap.org/data/2.5/box/city?bbox="+lat1+","+lng1+","+lat2+","+lng2+",100000&cluster=no&units=imperial&appid=2ab91d37d2983284cd0e8a970e078544");
+        	//lon of the top left point, 
+        	//lat of the top left point, 
+        	//lon of the bottom right point,
+        	//lat of the bottom right point, 
+            url = new URL("http://api.openweathermap.org/data/2.5/box/city?bbox="+
+            					String.valueOf(tllon)+","+
+            					String.valueOf(tllat)+","+
+            					String.valueOf(brlon)+","+
+            					String.valueOf(brlat)+",100000&cluster=no&units=imperial&appid=2ab91d37d2983284cd0e8a970e078544");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
