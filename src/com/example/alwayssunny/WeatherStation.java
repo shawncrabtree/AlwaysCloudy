@@ -1,5 +1,6 @@
 package com.example.alwayssunny;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,7 +18,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 @PersistenceCapable
-public class WeatherStation {
+public class WeatherStation implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
 	@PrimaryKey
 	private Long Id;
 

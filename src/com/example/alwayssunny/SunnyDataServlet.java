@@ -8,12 +8,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-import javax.jdo.PersistenceManager;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.datastore.GeoPt;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.appengine.labs.repackaged.org.json.JSONArray;
 import com.google.appengine.labs.repackaged.org.json.JSONException;
 import com.google.appengine.labs.repackaged.org.json.JSONObject;
@@ -25,16 +26,10 @@ public class SunnyDataServlet extends HttpServlet {
 		resp.setContentType("application/json");
 		PrintWriter out = resp.getWriter();
 
-		PersistenceManager pm = PMF.getPMF().getPersistenceManager();
 		ArrayList<WeatherStation> stations = searchWeatherStations();
-		try {
-			pm.makePersistentAll(stations);
-			
-		} catch (IllegalArgumentException iae) {
-			out.write(iae.getMessage());
-		} finally {
-			pm.close();
-		}
+		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+		syncCache.put("sun", stations);
+		
 		out.write("done");
 	}
 	
@@ -82,7 +77,9 @@ public class SunnyDataServlet extends HttpServlet {
 				e.printStackTrace();
 			}
             WeatherStation station = getWeatherStationFromJSONObject(jObj);
-            stations.add(station);
+            if(station.isSunny()){
+            	stations.add(station);
+            }
         }
 
         return stations;
