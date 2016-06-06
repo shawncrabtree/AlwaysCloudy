@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #map {
+        width: 500px;
+        height: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+	function initMap() {
+
+		var map = new google.maps.Map(document.getElementById('map'), {
+			zoom: 1,
+			center: {lat: 0, lng: 0}
+		});
+
+		var xhr = new XMLHttpRequest();
+		xhr.open("get", "http://localhost:8888/alwayssunny", true);
+		xhr.responseType = "json";
+		xhr.onload = function() {
+		  var status = xhr.status;
+		  if (status == 200) {
+			
+			for (i = 0; i < xhr.response.length; i++) { 
+				var loc = xhr.response[i];
+				var myLatLng = {lat: parseInt(loc.lat), lng: parseInt(loc.lng)};
+				var marker = new google.maps.Marker({
+					position: myLatLng,
+					map: map,
+					title: loc.name
+				});
+			}
+			document.getElementById('count').innerHTML = xhr.response.length;
+			
+		  } else {
+			console.log('sdfsdfdsf');
+		  }
+		};
+		xhr.send();
+		  
+		
+	}
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?callback=initMap"
+        async defer></script>
+		
+	<div id="count"></div>
+  </body>
+</html>
